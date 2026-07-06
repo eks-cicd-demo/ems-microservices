@@ -121,3 +121,36 @@ git checkout main
 #merge the feature branch to the main branch
 git merge feature/employee-service
 git push origin main
+
+
+##########################################
+# Update main
+git checkout main
+git pull origin main
+
+# Create feature branch
+git checkout -b feature/docker
+
+# Work...
+
+git add .
+git commit -m "Sprint 4: Containerize all microservices"
+
+git push -u origin feature/docker
+
+#After testing:
+git checkout main
+
+git merge feature/docker
+
+git push origin main
+
+git branch -d feature/docker
+
+git push origin --delete feature/docker
+
+#Create a tag:
+
+git tag -a v0.4.0 -m "Sprint 4: Docker containerization"
+
+git push origin --tags
