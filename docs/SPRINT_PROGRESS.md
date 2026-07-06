@@ -35,3 +35,27 @@ Status
 
 Completed
 
+# Sprint 3
+
+## Objective
+
+Run the complete microservices application locally.
+
+## Completed
+
+- Auth Service
+- Employee Service
+- Admin Service
+- Dashboard Service
+- Gateway
+- End-to-End Integration Testing
+- Browser Testing
+- Application Freeze
+
+## Result
+
+Successfully validated the complete application locally.
+
+Status
+
+Completed
