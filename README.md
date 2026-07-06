@@ -130,6 +130,7 @@ git pull origin main
 
 # Create feature branch
 git checkout -b feature/docker
+git push -u origin feature/docker
 
 # Work...
 
