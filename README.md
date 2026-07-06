@@ -56,31 +56,31 @@ Each service is independent — its own venv, its own port.
 ```bash
 # Terminal 1 — Auth Service
 cd auth-service
-python -m venv venv && source venv/bin/activate
+python -m venv venv && source venv/Scripts/activate
 pip install -r requirements.txt
 flask --app app run -p 5001
 
 # Terminal 2 — Employee Service
 cd employee-service
-python -m venv venv && source venv/bin/activate
+python -m venv venv && source venv/Scripts/activate
 pip install -r requirements.txt
 flask --app app run -p 5002
 
 # Terminal 3 — Admin Service
 cd admin-service
-python -m venv venv && source venv/bin/activate
+python -m venv venv && source venv/Scripts/activate
 pip install -r requirements.txt
 flask --app app run -p 5003
 
 # Terminal 4 — Dashboard Service
 cd dashboard-service
-python -m venv venv && source venv/bin/activate
+python -m venv venv && source venv/Scripts/activate
 pip install -r requirements.txt
 flask --app app run -p 5004
 
 # Terminal 5 — Gateway (serves the UI)
 cd gateway
-python -m venv venv && source venv/bin/activate
+python -m venv venv && source venv/Scripts/activate
 pip install -r requirements.txt
 flask --app app run -p 5000
 ```
@@ -109,3 +109,15 @@ Open **http://127.0.0.1:5000** and sign in with `admin@example.com` / `admin123`
 
 - To split into per-service databases later, replace each service's `DATABASE_URL` with its own RDS DB and drop the schema qualifier — the model files are already scoped.
 - The gateway proxies with `requests`; swap for nginx in production.
+
+
+#create a new feature branch and checkout to that branch
+git checkout -b feature/admin-service
+
+#After all the local development need to merge to the main branch.
+#for that need to checkout to main branch
+git checkout main
+
+#merge the feature branch to the main branch
+git merge feature/employee-service
+git push origin main
