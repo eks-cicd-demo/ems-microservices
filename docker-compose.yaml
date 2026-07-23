@@ -3,25 +3,20 @@ services:
     image: postgres:16-alpine
     container_name: ems-postgres
     restart: unless-stopped
-
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-
     ports:
       - "5433:5432"
-
     volumes:
       - ems_pgdata:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 10
-
     networks:
       - ems-network
 
@@ -29,21 +24,143 @@ services:
     image: dpage/pgadmin4:latest
     container_name: ems-pgadmin
     restart: unless-stopped
-
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
       PGADMIN_CONFIG_SERVER_MODE: "False"
-
     ports:
       - "5050:80"
-
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - ems-network
+
+  auth-service:
+    image: ems-auth:v1.0.0
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: ems-auth-service
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+    ports:
+      - "5001:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - ems-network
+
+  employee-service:
+    image: ems-employee:v1.0.0
+    build: 
+      context: ./employee-service
+      dockerfile: Dockerfile
+    container_name: ems-employee-service
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+    ports:
+      - "5002:5002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
     networks:
       - ems-network
+
+  admin-service:
+    image: ems-admin:v1.0.0
+    build: 
+      context: ./admin-service
+      dockerfile: Dockerfile
+    container_name: ems-admin-service
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+    ports:
+      - "5003:5003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - ems-network
+
+  dashboard-service:
+    image: ems-dashboard:v1.0.0
+    build: 
+      context: ./dashboard-service
+      dockerfile: Dockerfile
+    container_name: ems-dashboard-service
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+    ports:
+      - "5004:5004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - ems-network
+
+  gateway:
+    image: ems-gateway:v1.0.0
+    build: 
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: ems-gateway
+    restart: unless-stopped
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:5001
+      EMPLOYEE_SERVICE_URL: http://employee-service:5002
+      ADMIN_SERVICE_URL: http://admin-service:5003
+      DASHBOARD_SERVICE_URL: http://dashboard-service:5004
+    ports:
+      - "5000:5000"
+    depends_on:
+      - auth-service
+      - employee-service
+      - admin-service
+      - dashboard-service
+    networks:
+      - ems-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
 
 volumes:
   ems_pgdata:
@@ -51,3 +168,4 @@ volumes:
 networks:
   ems-network:
     driver: bridge
+
