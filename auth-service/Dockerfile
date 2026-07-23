@@ -30,3 +30,4 @@ EXPOSE 5001
 # Use gunicorn in prod; flask dev server for local. Pick one.
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5001", "app:app"]
 
+

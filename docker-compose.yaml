@@ -4,16 +4,16 @@ services:
     container_name: ems-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ems_user
-      POSTGRES_PASSWORD: ems_password
-      POSTGRES_DB: ems_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - ems_pgdata:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ems_user -d ems_db"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -25,8 +25,8 @@ services:
     container_name: ems-pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
       PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "5050:80"
@@ -37,67 +37,107 @@ services:
       - ems-network
 
   auth-service:
-    build: ./auth-service
+    image: ems-auth:v1.0.0
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
     container_name: ems-auth-service
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+psycopg://ems_user:ems_password@postgres:5432/ems_db
+      DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
     ports:
       - "5001:5001"
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     networks:
       - ems-network
 
   employee-service:
-    build: ./employee-service
+    image: ems-employee:v1.0.0
+    build: 
+      context: ./employee-service
+      dockerfile: Dockerfile
     container_name: ems-employee-service
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+psycopg://ems_user:ems_password@postgres:5432/ems_db
+      DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
     ports:
       - "5002:5002"
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
     networks:
       - ems-network
 
   admin-service:
-    build: ./admin-service
+    image: ems-admin:v1.0.0
+    build: 
+      context: ./admin-service
+      dockerfile: Dockerfile
     container_name: ems-admin-service
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+psycopg://ems_user:ems_password@postgres:5432/ems_db
+      DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
     ports:
       - "5003:5003"
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     networks:
       - ems-network
 
   dashboard-service:
-    build: ./dashboard-service
+    image: ems-dashboard:v1.0.0
+    build: 
+      context: ./dashboard-service
+      dockerfile: Dockerfile
     container_name: ems-dashboard-service
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql+psycopg://ems_user:ems_password@postgres:5432/ems_db
+      DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
     ports:
       - "5004:5004"
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     networks:
       - ems-network
 
   gateway:
-    build: ./gateway
+    image: ems-gateway:v1.0.0
+    build: 
+      context: ./gateway
+      dockerfile: Dockerfile
     container_name: ems-gateway
     restart: unless-stopped
     environment:
@@ -114,6 +154,13 @@ services:
       - dashboard-service
     networks:
       - ems-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
 
 volumes:
   ems_pgdata:
