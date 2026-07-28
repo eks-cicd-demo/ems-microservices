@@ -1,10 +1,11 @@
-name: Continuos Integration
-on: 
+name: Continuous Integration
+
+on:
   push:
     branches:
       - github-actions
   workflow_dispatch:
-
+    
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -13,6 +14,33 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v4
 
-      - name: Print Hello
-        run: echo "Github Actions is working!"
-    
+      - name: setup python
+        uses: actions/setup-python@v5
+        with: 
+          python-version: "3.12"
+      - name: check python version 
+        run: |
+         python --version
+         pip --version
+
+      - name: upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Install Gageway requirements
+        run: pip install -r gateway/requirements.txt
+
+      - name: Install Auth requirements
+        run: pip install -r auth-service/requirements.txt
+
+      - name: Install Employee requirements
+        run: pip install -r employee-service/requirements.txt
+
+      - name: Install Admin requirements
+        run: pip install -r admin-service/requirements.txt
+
+      - name: Install Dashboard requirements
+        run: pip install -r dashboard-service/requirements.txt
+
+      - name: CI Completed
+        run: echo "All dependencies installed successfully!!"
