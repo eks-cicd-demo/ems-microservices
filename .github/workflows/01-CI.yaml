@@ -14,10 +14,17 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v4
 
-      - name: setup python
+      - name: Setup Python
         uses: actions/setup-python@v5
-        with: 
+        with:
           python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            gateway/requirements.txt
+            auth-service/requirements.txt
+            employee-service/requirements.txt
+            admin-service/requirements.txt
+            dashboard-service/requirements.txt
       - name: check python version 
         run: |
          python --version
