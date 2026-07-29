@@ -56,7 +56,10 @@ jobs:
         run: |
           black --check .
 
-      
+      - name: Run flake8
+        working-directory: ${{matrix.service}}
+        run: |
+          flake8 .
 
       - name: CI Completed
         run: echo "${{matrix.service}} installed successfully!!"
