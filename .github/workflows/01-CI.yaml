@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - github-actions
+    paths:
+      - .github/workflows/01-CI.yaml
   workflow_dispatch:
     
 jobs:

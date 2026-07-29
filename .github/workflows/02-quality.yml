@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - github-actions
+    paths:
+      - .github/workflows/02-quality.yml
   workflow_dispatch:
     
 jobs:
