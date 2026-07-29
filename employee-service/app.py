@@ -1,11 +1,23 @@
 """Employee Service — CRUD + search. Port 5002."""
+
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from sqlalchemy import create_engine, Column, BigInteger, String, Numeric, Date, DateTime, func, or_
+from sqlalchemy import (
+    create_engine,
+    Column,
+    BigInteger,
+    String,
+    Numeric,
+    Date,
+    DateTime,
+    func,
+    or_,
+)
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from auth_utils import require_auth, require_admin
@@ -28,12 +40,18 @@ class Employee(Base):
     salary = Column(Numeric(12, 2))
     hire_date = Column(Date)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
     def to_dict(self):
         return {
-            "id": self.id, "full_name": self.full_name, "email": self.email,
-            "phone": self.phone, "position": self.position, "department": self.department,
+            "id": self.id,
+            "full_name": self.full_name,
+            "email": self.email,
+            "phone": self.phone,
+            "position": self.position,
+            "department": self.department,
             "salary": float(self.salary) if self.salary is not None else None,
             "hire_date": self.hire_date.isoformat() if self.hire_date else None,
         }
@@ -64,19 +82,23 @@ def search():
         query = s.query(Employee)
         if q:
             like = f"%{q}%"
-            query = query.filter(or_(
-                Employee.full_name.ilike(like),
-                Employee.email.ilike(like),
-                Employee.position.ilike(like),
-                Employee.department.ilike(like),
-            ))
+            query = query.filter(
+                or_(
+                    Employee.full_name.ilike(like),
+                    Employee.email.ilike(like),
+                    Employee.position.ilike(like),
+                    Employee.department.ilike(like),
+                )
+            )
         return jsonify([e.to_dict() for e in query.order_by(Employee.full_name).all()])
 
 
 def _payload():
     b = request.get_json(force=True) or {}
-    return {k: (b.get(k) or None) for k in ("full_name", "email", "phone", "position", "department", "hire_date")} | \
-           {"salary": b.get("salary")}
+    return {
+        k: (b.get(k) or None)
+        for k in ("full_name", "email", "phone", "position", "department", "hire_date")
+    } | {"salary": b.get("salary")}
 
 
 @app.post("/")
@@ -88,7 +110,10 @@ def create():
     with SessionLocal() as s:
         if s.query(Employee).filter_by(email=data["email"]).first():
             return jsonify({"error": "Email already exists"}), 409
-        e = Employee(**data); s.add(e); s.commit(); s.refresh(e)
+        e = Employee(**data)
+        s.add(e)
+        s.commit()
+        s.refresh(e)
         return jsonify(e.to_dict()), 201
 
 
@@ -102,7 +127,8 @@ def update(emp_id: int):
             return jsonify({"error": "Not found"}), 404
         for k, v in data.items():
             setattr(e, k, v)
-        s.commit(); s.refresh(e)
+        s.commit()
+        s.refresh(e)
         return jsonify(e.to_dict())
 
 
@@ -113,7 +139,8 @@ def delete(emp_id: int):
         e = s.get(Employee, emp_id)
         if not e:
             return jsonify({"error": "Not found"}), 404
-        s.delete(e); s.commit()
+        s.delete(e)
+        s.commit()
         return "", 204
 
 

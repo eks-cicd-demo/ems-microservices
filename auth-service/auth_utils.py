@@ -1,5 +1,6 @@
 """JWT helpers used by every microservice. Verifies tokens locally with the
 shared JWT_SECRET so services don't need to call auth-service on each request."""
+
 import os
 from datetime import datetime, timedelta, timezone
 from functools import wraps
@@ -43,6 +44,7 @@ def require_auth(fn):
             return jsonify({"error": err}), 401
         g.user = claims
         return fn(*a, **kw)
+
     return wrapper
 
 
@@ -56,4 +58,5 @@ def require_admin(fn):
             return jsonify({"error": "Admin only"}), 403
         g.user = claims
         return fn(*a, **kw)
+
     return wrapper

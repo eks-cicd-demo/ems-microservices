@@ -1,6 +1,8 @@
 """Admin Service — manage users & roles. Port 5003."""
+
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from flask import Flask, request, jsonify
@@ -40,11 +42,18 @@ def health():
 def list_users():
     with SessionLocal() as s:
         rows = s.query(User).order_by(User.created_at.desc()).all()
-        return jsonify([
-            {"id": u.id, "email": u.email, "full_name": u.full_name, "role": u.role,
-             "created_at": u.created_at.isoformat() if u.created_at else None}
-            for u in rows
-        ])
+        return jsonify(
+            [
+                {
+                    "id": u.id,
+                    "email": u.email,
+                    "full_name": u.full_name,
+                    "role": u.role,
+                    "created_at": u.created_at.isoformat() if u.created_at else None,
+                }
+                for u in rows
+            ]
+        )
 
 
 @app.post("/users/<int:user_id>/role")
@@ -58,7 +67,8 @@ def set_role(user_id: int):
         u = s.get(User, user_id)
         if not u:
             return jsonify({"error": "Not found"}), 404
-        u.role = role; s.commit()
+        u.role = role
+        s.commit()
         return jsonify({"id": u.id, "email": u.email, "role": u.role})
 
 
@@ -69,7 +79,8 @@ def delete_user(user_id: int):
         u = s.get(User, user_id)
         if not u:
             return jsonify({"error": "Not found"}), 404
-        s.delete(u); s.commit()
+        s.delete(u)
+        s.commit()
         return "", 204
 
 

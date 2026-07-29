@@ -1,6 +1,8 @@
 """Auth Service — login, register, /me. Port 5001."""
+
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from flask import Flask, request, jsonify
@@ -32,12 +34,14 @@ class User(Base):
 def seed_admin():
     with SessionLocal() as s:
         if not s.query(User).filter_by(email="admin@example.com").first():
-            s.add(User(
-                email="admin@example.com",
-                password_hash=generate_password_hash("admin123"),
-                full_name="Administrator",
-                role="admin",
-            ))
+            s.add(
+                User(
+                    email="admin@example.com",
+                    password_hash=generate_password_hash("admin123"),
+                    full_name="Administrator",
+                    role="admin",
+                )
+            )
             s.commit()
             print("[auth] seeded admin@example.com / admin123")
 
@@ -64,10 +68,17 @@ def login():
         if not user or not check_password_hash(user.password_hash, password):
             return jsonify({"error": "Invalid email or password"}), 401
         token = issue_token(user.id, user.email, user.role)
-        return jsonify({
-            "token": token,
-            "user": {"id": user.id, "email": user.email, "full_name": user.full_name, "role": user.role},
-        })
+        return jsonify(
+            {
+                "token": token,
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "full_name": user.full_name,
+                    "role": user.role,
+                },
+            }
+        )
 
 
 @app.post("/register")
@@ -81,11 +92,30 @@ def register():
     with SessionLocal() as s:
         if s.query(User).filter_by(email=email).first():
             return jsonify({"error": "Email already registered"}), 409
-        u = User(email=email, password_hash=generate_password_hash(password),
-                 full_name=full_name, role="user")
-        s.add(u); s.commit(); s.refresh(u)
+        u = User(
+            email=email,
+            password_hash=generate_password_hash(password),
+            full_name=full_name,
+            role="user",
+        )
+        s.add(u)
+        s.commit()
+        s.refresh(u)
         token = issue_token(u.id, u.email, u.role)
-        return jsonify({"token": token, "user": {"id": u.id, "email": u.email, "full_name": u.full_name, "role": u.role}}), 201
+        return (
+            jsonify(
+                {
+                    "token": token,
+                    "user": {
+                        "id": u.id,
+                        "email": u.email,
+                        "full_name": u.full_name,
+                        "role": u.role,
+                    },
+                }
+            ),
+            201,
+        )
 
 
 @app.get("/me")
