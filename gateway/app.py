@@ -3,13 +3,12 @@ and serves the Bootstrap UI. Port 5000."""
 
 import os
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 import requests
+from dotenv import load_dotenv
 from flask import Flask, Response, render_template, request
 from flask_cors import CORS
+
+load_dotenv()
 
 SERVICES = {
     "auth": os.environ.get("AUTH_SERVICE_URL", "http://127.0.0.1:5001"),
@@ -17,6 +16,7 @@ SERVICES = {
     "admin": os.environ.get("ADMIN_SERVICE_URL", "http://127.0.0.1:5003"),
     "dashboard": os.environ.get("DASHBOARD_SERVICE_URL", "http://127.0.0.1:5004"),
 }
+
 HOP_BY_HOP = {
     "connection",
     "keep-alive",

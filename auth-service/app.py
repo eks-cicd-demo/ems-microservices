@@ -4,14 +4,14 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
 from auth_utils import issue_token, require_auth
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import BigInteger, Column, DateTime, String, create_engine, func
 from sqlalchemy.orm import declarative_base, sessionmaker
 from werkzeug.security import check_password_hash, generate_password_hash
+
+load_dotenv()
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)

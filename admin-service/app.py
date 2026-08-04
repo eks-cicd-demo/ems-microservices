@@ -3,14 +3,14 @@
 import os
 
 from dotenv import load_dotenv
-
-load_dotenv()
-
-from auth_utils import require_admin
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import BigInteger, Column, DateTime, String, create_engine, func
 from sqlalchemy.orm import declarative_base, sessionmaker
+
+from auth_utils import require_admin
+
+load_dotenv()
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
