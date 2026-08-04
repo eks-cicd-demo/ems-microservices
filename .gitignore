@@ -89,3 +89,8 @@ docker-data/
 ###############################################################################
 *.bak
 *.tmp
+
+
+# Local development dependency files
+/requirements.txt
+/requirements-dev.txt

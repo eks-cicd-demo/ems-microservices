@@ -4,8 +4,9 @@ shared JWT_SECRET so services don't need to call auth-service on each request.""
 import os
 from datetime import datetime, timedelta, timezone
 from functools import wraps
+
 import jwt
-from flask import request, jsonify, g
+from flask import g, jsonify, request
 
 JWT_SECRET = os.environ.get("JWT_SECRET", "dev-secret-change-me")
 JWT_ALGO = os.environ.get("JWT_ALGO", "HS256")

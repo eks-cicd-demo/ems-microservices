@@ -46,6 +46,11 @@ jobs:
       - name: Install Dependencies 
         run: pip install -r ${{matrix.service}}/requirements-dev.txt
 
+      - name: Run isort
+        working-directory: ${{ matrix.service }}
+        run: |
+          isort --check-only .
+          
       - name: Show Black Version
         working-directory: ${{ matrix.service }}
         run: |

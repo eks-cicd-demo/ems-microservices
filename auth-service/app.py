@@ -1,18 +1,17 @@
 """Auth Service — login, register, /me. Port 5001."""
 
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from sqlalchemy import create_engine, Column, BigInteger, String, DateTime, func
-from sqlalchemy.orm import declarative_base, sessionmaker
-from werkzeug.security import generate_password_hash, check_password_hash
-
 from auth_utils import issue_token, require_auth
-from flask import g
+from flask import Flask, g, jsonify, request
+from flask_cors import CORS
+from sqlalchemy import BigInteger, Column, DateTime, String, create_engine, func
+from sqlalchemy.orm import declarative_base, sessionmaker
+from werkzeug.security import check_password_hash, generate_password_hash
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
