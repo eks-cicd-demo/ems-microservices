@@ -2,9 +2,8 @@
 
 import os
 
-from dotenv import load_dotenv
-
 from auth_utils import issue_token, require_auth
+from dotenv import load_dotenv
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import BigInteger, Column, DateTime, String, create_engine, func

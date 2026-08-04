@@ -2,13 +2,12 @@
 
 import os
 
+from auth_utils import require_admin
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import BigInteger, Column, DateTime, String, create_engine, func
 from sqlalchemy.orm import declarative_base, sessionmaker
-
-from auth_utils import require_admin
 
 load_dotenv()
 
