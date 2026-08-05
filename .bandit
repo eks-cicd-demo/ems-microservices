@@ -1,9 +1,8 @@
-[bandit]
-exclude_dirs =
-    .venv,
-    venv,
-    __pycache__,
-    .pytest_cache,
-    build,
-    dist,
-    .git
+exclude_dirs:
+  - .venv
+  - venv
+  - __pycache__
+  - .pytest_cache
+  - build
+  - dist
+  - .git
