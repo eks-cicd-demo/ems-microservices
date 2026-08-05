@@ -1,0 +1,75 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - github-actions
+    paths:
+      - .github/workflows/03-security.yml
+  workflow_dispatch:
+    
+jobs:
+  ci:
+    name: validate ${{matrix.service}}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - gateway
+          - auth-service 
+          - employee-service 
+          - admin-service 
+          - dashboard-service 
+
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: ${{ matrix.service }}/requirements-dev.txt
+      - name: check python version 
+        run: |
+         python --version
+         pip --version
+
+      - name: upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Install Dependencies 
+        run: pip install -r ${{matrix.service}}/requirements-dev.txt
+        
+      - name: Run isort
+        working-directory: ${{ matrix.service }}
+        run: |
+          isort --check-only .
+
+      - name: Show Black Version
+        working-directory: ${{ matrix.service }}
+        run: |
+          black --version
+
+      - name: Check code formatting
+        working-directory: ${{matrix.service}}
+        run: |
+          black --check .
+
+      - name: Run flake8
+        working-directory: ${{matrix.service}}
+        run: |
+          flake8 .
+
+      - name: Run Bandit
+        working-directory: ${{ matrix.service }}
+        run: |
+          bandit -r . -x .venv,venv,__pycache__
+          
+      - name: CI Completed
+        run: echo "${{matrix.service}} installed successfully!!"
