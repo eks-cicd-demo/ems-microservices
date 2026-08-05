@@ -97,7 +97,6 @@ def health():
     return {"service": "gateway", "ok": True, "services": SERVICES}
 
 
-
 if __name__ == "__main__":
     app.run(
         port=5003,
