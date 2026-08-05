@@ -71,5 +71,6 @@ jobs:
         run: |
           bandit -r . -x .venv,venv,__pycache__
           
+
       - name: CI Completed
         run: echo "${{matrix.service}} installed successfully!!"

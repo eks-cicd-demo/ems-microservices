@@ -143,5 +143,9 @@ def delete(emp_id: int):
         return "", 204
 
 
+
 if __name__ == "__main__":
-    app.run(port=5002, debug=True)
+    app.run(
+        port=5003,
+        debug=os.getenv("FLASK_DEBUG", "False").lower() == "true",
+    )
