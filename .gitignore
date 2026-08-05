@@ -95,5 +95,4 @@ docker-data/
 /requirements.txt
 /requirements-dev.txt
 
-#bandit localfiles
-.bandit
+

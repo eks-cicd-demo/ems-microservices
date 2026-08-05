@@ -67,9 +67,18 @@ jobs:
           flake8 .
 
       - name: Run Bandit
-        working-directory: ${{ matrix.service }}
         run: |
-          bandit -r . -x .venv,venv,__pycache__
+          bandit \
+            -c .bandit \
+            -r ${{ matrix.service }} \
+            -f json \
+            -o bandit-report.json
+
+      - name: Upload Bandit Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-${{ matrix.service }}
+          path: bandit-report.json
 
       - name: CI Completed
-        run: echo "${{matrix.service}} installed successfully!!"
+        run: echo "${{matrix.service}} installed and code quality and security checks Completed successfully!!"
