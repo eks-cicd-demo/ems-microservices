@@ -6,3 +6,4 @@ exclude_dirs:
   - build
   - dist
   - .git
+  - tests
