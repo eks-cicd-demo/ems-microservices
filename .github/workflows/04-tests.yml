@@ -83,6 +83,12 @@ jobs:
 
       - name: Run Pytest
         working-directory: ${{ matrix.service }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_ALGO: HS256
+          JWT_EXPIRES_MIN: 120
+          FLASK_DEBUG: "False"
         run: |
           python -m pytest -v
 
