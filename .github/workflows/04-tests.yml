@@ -81,8 +81,6 @@ jobs:
           name: bandit-${{ matrix.service }}
           path: bandit-report.json
 
-
-
       - name: Run Pytest
         working-directory: ${{ matrix.service }}
         run: |
