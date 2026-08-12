@@ -81,13 +81,31 @@ jobs:
           name: bandit-${{ matrix.service }}
           path: bandit-report.json
 
+
+      - name: Create .env
+        run: |
+          cat > .env <<EOF
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+
+          AUTH_SERVICE_URL=${{ secrets.AUTH_SERVICE_URL }}
+          EMPLOYEE_SERVICE_URL=http://employee-service:5002
+          ADMIN_SERVICE_URL=http://admin-service:5003
+          DASHBOARD_SERVICE_URL=http://dashboard-service:5004
+
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_ALGO=HS256
+          JWT_EXPIRES_MIN=120
+          FLASK_DEBUG=False
+          EOF
+
+
       - name: Start PostgreSQL
-        env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_HOST: postgres
-          POSTGRES_PORT: 5432
         run: |
           docker compose up -d postgres
 
@@ -101,12 +119,6 @@ jobs:
 
 
       - name: Start Auth Service
-        env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           docker compose up -d auth-service
 
