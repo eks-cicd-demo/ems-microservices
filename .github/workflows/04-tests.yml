@@ -139,8 +139,6 @@ jobs:
           python -m pytest -v
 
 
-
-
       - name: Stop Docker Compose
         if: always()
         run: |
