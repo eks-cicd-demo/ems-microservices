@@ -81,6 +81,39 @@ jobs:
           name: bandit-${{ matrix.service }}
           path: bandit-report.json
 
+      - name: Start PostgreSQL
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
+        run: |
+          docker compose up -d postgres
+
+      - name: Wait for PostgreSQL
+        run: |
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' ems-postgres)" = "healthy" ]; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+
+
+      - name: Start Auth Service
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          docker compose up -d auth-service
+
+
+      - name: Wait for Auth Service
+        run: sleep 10
+
+
       - name: Run Pytest
         working-directory: ${{ matrix.service }}
         env:
@@ -92,7 +125,12 @@ jobs:
         run: |
           python -m pytest -v
 
-          
+
+      - name: Stop Docker Compose
+        if: always()
+        run: |
+          docker compose down -v
+
 
       - name: CI Completed
         run: echo "${{matrix.service}} installed and code quality and security checks Completed successfully!!"
