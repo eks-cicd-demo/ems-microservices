@@ -1,14 +1,15 @@
 """Admin Service — manage users & roles. Port 5003."""
-import os
-from dotenv import load_dotenv
-load_dotenv()
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from sqlalchemy import create_engine, Column, BigInteger, String, DateTime, func
-from sqlalchemy.orm import declarative_base, sessionmaker
+import os
 
 from auth_utils import require_admin
+from dotenv import load_dotenv
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+from sqlalchemy import BigInteger, Column, DateTime, String, create_engine, func
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+load_dotenv()
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
@@ -40,11 +41,18 @@ def health():
 def list_users():
     with SessionLocal() as s:
         rows = s.query(User).order_by(User.created_at.desc()).all()
-        return jsonify([
-            {"id": u.id, "email": u.email, "full_name": u.full_name, "role": u.role,
-             "created_at": u.created_at.isoformat() if u.created_at else None}
-            for u in rows
-        ])
+        return jsonify(
+            [
+                {
+                    "id": u.id,
+                    "email": u.email,
+                    "full_name": u.full_name,
+                    "role": u.role,
+                    "created_at": u.created_at.isoformat() if u.created_at else None,
+                }
+                for u in rows
+            ]
+        )
 
 
 @app.post("/users/<int:user_id>/role")
@@ -58,7 +66,8 @@ def set_role(user_id: int):
         u = s.get(User, user_id)
         if not u:
             return jsonify({"error": "Not found"}), 404
-        u.role = role; s.commit()
+        u.role = role
+        s.commit()
         return jsonify({"id": u.id, "email": u.email, "role": u.role})
 
 
@@ -69,9 +78,13 @@ def delete_user(user_id: int):
         u = s.get(User, user_id)
         if not u:
             return jsonify({"error": "Not found"}), 404
-        s.delete(u); s.commit()
+        s.delete(u)
+        s.commit()
         return "", 204
 
 
 if __name__ == "__main__":
-    app.run(port=5003, debug=True)
+    app.run(
+        port=5003,
+        debug=os.getenv("FLASK_DEBUG", "False").lower() == "true",
+    )

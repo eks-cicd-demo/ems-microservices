@@ -1,0 +1,55 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - github-actions
+    paths:
+      - .github/workflows/01-CI.yaml
+  workflow_dispatch:
+    
+jobs:
+  ci:
+    name: validate ${{matrix.service}}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        service:
+          - gateway
+          - auth-service 
+          - employee-service 
+          - admin-service 
+          - dashboard-service 
+
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            gateway/requirements.txt
+            auth-service/requirements.txt
+            employee-service/requirements.txt
+            admin-service/requirements.txt
+            dashboard-service/requirements.txt
+      - name: check python version 
+        run: |
+         python --version
+         pip --version
+
+      - name: upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Install Dependencies 
+        run: pip install -r ${{matrix.service}}/requirements.txt    
+
+      - name: CI Completed
+        run: echo "${{matrix.service}} installed successfully!!"

@@ -1,10 +1,12 @@
 """JWT helpers used by every microservice. Verifies tokens locally with the
 shared JWT_SECRET so services don't need to call auth-service on each request."""
+
 import os
 from datetime import datetime, timedelta, timezone
 from functools import wraps
+
 import jwt
-from flask import request, jsonify, g
+from flask import g, jsonify, request
 
 JWT_SECRET = os.environ.get("JWT_SECRET", "dev-secret-change-me")
 JWT_ALGO = os.environ.get("JWT_ALGO", "HS256")
@@ -43,6 +45,7 @@ def require_auth(fn):
             return jsonify({"error": err}), 401
         g.user = claims
         return fn(*a, **kw)
+
     return wrapper
 
 
@@ -56,4 +59,5 @@ def require_admin(fn):
             return jsonify({"error": "Admin only"}), 403
         g.user = claims
         return fn(*a, **kw)
+
     return wrapper
