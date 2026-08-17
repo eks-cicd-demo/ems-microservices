@@ -277,3 +277,333 @@ Database connectivity
 Networking
 File permissions
 Docker configuration
+
+
+################################################## Sprint 5 CI with quality and security ################
+Sprint Troubleshooting Notes
+
+Sprint Goal: Implement automated quality checks and testing using GitHub Actions for the EMS Microservices project.
+
+1. isort Failure
+Issue
+
+GitHub Actions failed due to import ordering.
+
+Example:
+
+import os
+from flask import Flask
+import requests
+Root Cause
+
+Imports were not grouped and sorted according to isort rules.
+
+Resolution
+
+Executed:
+
+isort .
+
+Configured pyproject.toml:
+
+[tool.isort]
+profile = "black"
+line_length = 88
+2. Flake8 E402 Error
+Error
+E402 module level import not at top of file
+
+Example:
+
+load_dotenv()
+
+import requests
+Root Cause
+
+Imports existed after executable statements.
+
+Resolution
+
+Moved imports above load_dotenv().
+
+Instead of:
+
+load_dotenv()
+
+import requests
+
+Used:
+
+import requests
+
+load_dotenv()
+3. Flake8 Line Length
+Error
+E501 line too long
+Resolution
+
+Configured Black and Flake8 with a consistent line length.
+
+[tool.black]
+line-length = 88
+
+[tool.flake8]
+max-line-length = 88
+4. Bandit B201
+Error
+Flask debug=True
+Root Cause
+
+Production security issue.
+
+Resolution
+
+Instead of
+
+app.run(debug=True)
+
+Used
+
+app.run(
+    debug=os.getenv("FLASK_DEBUG", "False").lower() == "true"
+)
+
+Local:
+
+FLASK_DEBUG=True
+
+GitHub Actions:
+
+FLASK_DEBUG=False
+5. Root Bandit Configuration
+
+Created
+
+.bandit
+
+Configured
+
+[bandit]
+exclude_dirs =
+    .venv,
+    venv,
+    __pycache__,
+    .pytest_cache,
+    build,
+    dist,
+    .git
+6. Bandit Configuration Parsing Error
+Error
+expected document start
+Root Cause
+
+Initially created .bandit in YAML format.
+
+Resolution
+
+Bandit expects INI format.
+
+Correct:
+
+[bandit]
+exclude_dirs =
+    .venv,
+    venv
+7. Python 3.14 Compatibility
+Error
+
+Bandit skipped files with
+
+Constant object has no attribute s
+Root Cause
+
+Bandit 1.8.6 is not fully compatible with Python 3.14.
+
+Resolution
+
+Installed Python 3.12.
+
+Created a new virtual environment.
+
+GitHub Actions already uses Python 3.12.
+
+8. pytest Import Error
+Error
+ModuleNotFoundError: app
+Root Cause
+
+Running
+
+pytest
+
+directly caused import path issues.
+
+Resolution
+
+Always execute
+
+python -m pytest
+9. Missing requests Package
+Error
+ModuleNotFoundError: requests
+Root Cause
+
+Virtual environment dependencies were incomplete.
+
+Resolution
+
+Installed development dependencies correctly.
+
+pip install -r requirements-dev.txt
+10. pip Installation Mistake
+
+Mistakenly executed
+
+pip install requirements-dev.txt
+
+Correct command
+
+pip install -r requirements-dev.txt
+11. Admin Service DATABASE_URL Error
+Error
+KeyError: DATABASE_URL
+Root Cause
+
+GitHub Actions has no local .env.
+
+Resolution
+
+Created GitHub repository secrets.
+
+Created .env dynamically inside GitHub Actions.
+
+12. PostgreSQL Connection Refused
+Error
+connection refused localhost:5433
+Root Cause
+
+Database container wasn't running.
+
+Resolution
+
+Started PostgreSQL during workflow.
+
+docker compose up -d postgres
+13. Docker Compose Variable Error
+Error
+JWT_SECRET is required
+Root Cause
+
+Docker Compose parses the entire compose file.
+
+Missing environment variables prevented parsing.
+
+Resolution
+
+Created .env before executing
+
+docker compose up
+14. Hostname Resolution Error
+Error
+failed to resolve host postgres
+Root Cause
+
+pytest runs on GitHub Runner, not inside Docker.
+
+Container hostname
+
+postgres
+
+is unavailable.
+
+Resolution
+
+GitHub Actions DATABASE_URL uses
+
+localhost:5433
+
+instead of
+
+postgres:5432
+15. Auth Service Database Seeding
+Observation
+
+Schema only creates tables.
+
+Admin user isn't inserted by SQL.
+
+Solution
+
+Auth Service executes
+
+seed_admin()
+
+during startup.
+
+GitHub Actions starts
+
+postgres
+
+followed by
+
+auth-service
+
+before running tests.
+
+16. Dashboard Tests Missing
+Error
+collected 0 items
+Root Cause
+
+No
+
+tests/
+
+directory existed.
+
+Resolution
+
+Created
+
+dashboard-service/tests/test_app.py
+17. Bandit B101
+Error
+assert used
+Root Cause
+
+Bandit scanned pytest test files.
+
+Resolution
+
+Ignored tests in .bandit
+
+exclude_dirs =
+    tests
+
+(or excluded test directories as appropriate for your project).
+
+18. GitHub Actions Test Infrastructure
+
+Final workflow sequence:
+
+Checkout
+        ↓
+Setup Python
+        ↓
+Install Dependencies
+        ↓
+Run Bandit
+        ↓
+Create .env
+        ↓
+docker compose up postgres
+        ↓
+Wait for PostgreSQL
+        ↓
+docker compose up auth-service
+        ↓
+Wait for Auth Service
+        ↓
+Run pytest
+        ↓
+docker compose down
