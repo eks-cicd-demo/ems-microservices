@@ -41,5 +41,7 @@ jobs:
           docker image inspect \
             ems-${{ matrix.service }}:${{ github.sha }}
 
+
+
       - name: List Images
         run: docker images
