@@ -1,9 +1,9 @@
-name: Continuous Integration
+name: Run Tests
 
 on:
   push:
     branches:
-      - github-actions
+      - docker-build
     paths:
       - .github/workflows/04-tests.yml
   workflow_dispatch:
