@@ -30,7 +30,24 @@ jobs:
         run: |
           docker build \
             -t ems-${{ matrix.service }}:${{ github.sha }} \
+            -t ems-${{ matrix.service }}:latest \
             ./${{ matrix.service }}
+
+      - name: Scan Docker Image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ems-${{ matrix.service }}:${{ github.sha }}
+          format: sarif
+          output: trivy-results-${{ matrix.service }}.sarif
+          exit-code: 0
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+      - name: Upload Trivy Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-${{ matrix.service }}
+          path: trivy-results-${{ matrix.service }}.sarif
 
       - name: Verify Image
         run: |
