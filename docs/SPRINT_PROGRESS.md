@@ -456,3 +456,164 @@ Resource cleanup
 
 \- Continuous Deployment preparation
 
+
+Sprint 6 Progress Notes
+
+Sprint: Docker Image Build & Security Scanning
+
+Sprint Objective
+
+Implement automated Docker image build and vulnerability scanning for all EMS microservices using GitHub Actions before pushing images to Amazon ECR.
+
+Completed Activities
+1. Docker Build Pipeline
+Created a dedicated GitHub Actions workflow for Docker image build.
+Configured workflow to trigger on pushes to the docker-build branch.
+Implemented matrix strategy to build all microservices in parallel.
+
+Services included:
+
+Gateway
+Auth Service
+Employee Service
+Admin Service
+Dashboard Service
+2. Docker Image Build
+
+Configured automated Docker image creation using:
+
+docker build
+
+Implemented GitHub SHA-based image tagging:
+
+ems-gateway:<github-sha>
+
+Benefits:
+
+Immutable image versions
+Easy rollback
+Traceability
+Production-ready tagging strategy
+3. Matrix Strategy
+
+Implemented GitHub Actions Matrix to build all services simultaneously.
+
+Benefits:
+
+Faster execution
+Independent build jobs
+Easy scalability for additional services
+4. Docker Image Verification
+
+Added verification step after image build.
+
+Validated:
+
+Image successfully created
+Image available on GitHub runner
+Docker image metadata
+5. Trivy Image Scanning
+
+Integrated Aqua Security Trivy into GitHub Actions.
+
+Configured:
+
+Docker image scanning
+High severity detection
+Critical severity detection
+Ignore unfixed vulnerabilities
+Report-only mode (exit-code: 0)
+6. Build Validation
+
+Successfully built Docker images for:
+
+Gateway
+Auth Service
+Employee Service
+Admin Service
+Dashboard Service
+
+Verified:
+
+Docker build success
+Image availability
+Trivy scan execution
+7. GitHub Actions Improvements
+
+Evaluated different pipeline architectures.
+
+Compared:
+
+Multiple independent workflows
+Quality
+Security
+Tests
+Build
+Single CI workflow using needs
+Chained workflows using workflow_run
+
+Documented advantages and limitations of each approach.
+
+8. CI/CD Design Decision
+
+Selected the following approach for the learning project:
+
+Separate workflows during development
+Refactor later if required
+Terraform maintained as an independent project
+9. Infrastructure Planning
+
+Planned separation of repositories.
+
+Application Repository
+ems-microservices
+
+Responsibilities:
+
+Python
+Docker
+GitHub Actions
+Trivy
+Amazon ECR
+Amazon EKS Deployment
+Infrastructure Repository
+ems-terraform
+
+Responsibilities:
+
+Terraform
+AWS Infrastructure
+Reusable Modules
+ECR
+IAM
+GitHub OIDC
+VPC
+EKS
+Sprint Deliverables
+Docker
+✅ Docker Build Workflow
+✅ Matrix Build Strategy
+✅ Docker Image Verification
+Security
+✅ Trivy Integration
+✅ Image Vulnerability Scan
+CI/CD
+✅ Parallel Docker Builds
+✅ SHA-based Image Tagging
+Architecture
+✅ CI/CD Repository Design
+✅ Terraform Repository Planning
+Sprint Outcome
+
+Successfully implemented a production-style Docker image build pipeline with automated security scanning for all microservices. The pipeline now validates source code, builds immutable Docker images, scans them for vulnerabilities using Trivy, and prepares them for publication to Amazon ECR.
+
+Next Sprint
+
+Sprint 7
+
+Create AWS infrastructure using Terraform (separate repository)
+Provision Amazon ECR
+Configure GitHub OIDC
+Create IAM Role
+Integrate GitHub Actions with Amazon ECR
+Push Docker images automatically
