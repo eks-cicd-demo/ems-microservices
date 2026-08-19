@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: checkout repository
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Build Docker Image
         run: |
@@ -40,8 +40,6 @@ jobs:
         run: |
           docker image inspect \
             ems-${{ matrix.service }}:${{ github.sha }}
-
-
 
       - name: List Images
         run: docker images

@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - docker-build
-    paths:
-      - .github/workflows/04-tests.yml
   workflow_dispatch:
     
 jobs:
