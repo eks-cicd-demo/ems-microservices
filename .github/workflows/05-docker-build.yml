@@ -1,0 +1,58 @@
+name: Docker Build
+
+on:
+  push:
+    branches:
+      - docker-build
+  workflow_dispatch:
+
+
+jobs:
+  docker-build:
+    name: Build ${{matrix.service}}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - gateway
+          - auth-service
+          - employee-service
+          - admin-service
+          - dashboard-service
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            -t ems-${{ matrix.service }}:${{ github.sha }} \
+            -t ems-${{ matrix.service }}:latest \
+            ./${{ matrix.service }}
+
+      - name: Scan Docker Image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ems-${{ matrix.service }}:${{ github.sha }}
+          format: sarif
+          output: trivy-results-${{ matrix.service }}.sarif
+          exit-code: 0
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+      - name: Upload Trivy Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-${{ matrix.service }}
+          path: trivy-results-${{ matrix.service }}.sarif
+
+      - name: Verify Image
+        run: |
+          docker image inspect \
+            ems-${{ matrix.service }}:${{ github.sha }}
+
+      - name: List Images
+        run: docker images

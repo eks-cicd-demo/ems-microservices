@@ -607,3 +607,56 @@ Wait for Auth Service
 Run pytest
         ↓
 docker compose down
+
+#######Sprint 6 Troubleshooting Notes################
+Docker Build Workflow
+Issue
+
+Incorrect YAML structure.
+
+Example:
+
+- name: Checkout Repository
+- uses: actions/checkout@v4
+Resolution
+
+Corrected syntax:
+
+- name: Checkout Repository
+  uses: actions/checkout@v4
+9. Trivy Action Version
+Issue
+Unable to resolve action
+aquasecurity/trivy-action@0.28.0
+Root Cause
+
+Specified action version was unavailable.
+
+Resolution
+
+Updated to a valid maintained release:
+
+uses: aquasecurity/trivy-action@v0.36.0
+10. Multiple Workflow Executions
+Observation
+
+A single push triggered both:
+
+Run Tests
+Docker Build
+Explanation
+
+Both workflows were configured with identical push triggers on the same branch, so GitHub Actions correctly started both independently.
+
+Decision
+
+Accepted during development for simplicity. Pipeline orchestration will be revisited after the infrastructure work is complete.
+
+Key Lessons Learned
+Use Python 3.12 for compatibility with the current toolchain.
+Keep Docker Compose for local development and integration testing.
+Use docker build in CI to produce deployable artifacts.
+Tag Docker images with immutable identifiers such as Git commit SHAs.
+Scan container images before publishing them.
+Build infrastructure separately from application code.
+Separate Infrastructure as Code and CI/CD into dedicated repositories for better maintainability and clearer ownership.
